@@ -1,11 +1,10 @@
-# PyTorch Template Project
-PyTorch deep learning project made easy.
+# Human Segmentation in Pytorch
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 
 <!-- code_chunk_output -->
 
-* [PyTorch Template Project](#pytorch-template-project)
+* [Human Segmentation in Pytorch](#pytorch-template-project)
 	* [Requirements](#requirements)
 	* [Features](#features)
 	* [Folder Structure](#folder-structure)
@@ -39,9 +38,9 @@ PyTorch deep learning project made easy.
 * tensorboard >= 1.14 (see [Tensorboard Visualization](#tensorboard-visualization))
 
 ## Features
-* Clear folder structure which is suitable for many deep learning projects.
-* `.json` config file support for convenient parameter tuning.
-* Customizable command line options for more convenient parameter tuning.
+* A clear and easy to navigate structure.
+* A `.json` config file with a lot of possibilities for parameter tuning.
+* Supports various models, losses, Lr schedulers, data augmentations.
 * Checkpoint saving and resuming.
 * Abstract base classes for faster development:
   * `BaseTrainer` handles checkpoint saving/resuming, training process logging, and more.
@@ -50,7 +49,7 @@ PyTorch deep learning project made easy.
 
 ## Folder Structure
   ```
-  pytorch-template/
+  humanseg.pytorch/
   │
   ├── train.py - main script to start training
   ├── test.py - evaluation of trained model
