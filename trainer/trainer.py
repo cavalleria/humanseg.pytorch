@@ -1,109 +1,133 @@
-import numpy as np
 import torch
+import numpy as np
+from tqdm import tqdm
+import torch.nn.functional as F
 from torchvision.utils import make_grid
-from base import BaseTrainer
-from utils import inf_loop, MetricTracker
+from base.base_trainer import BaseTrainer
 
+def poly_lr_scheduler(optimizer, init_lr, curr_iter, max_iter, power=0.9):
+	for g in optimizer.param_groups:
+		g['lr'] = init_lr * (1 - curr_iter/max_iter)**power
 
 class Trainer(BaseTrainer):
-    """
-    Trainer class
-    """
-    def __init__(self, model, criterion, metric_ftns, optimizer, config, data_loader,
-                 valid_data_loader=None, lr_scheduler=None, len_epoch=None):
-        super().__init__(model, criterion, metric_ftns, optimizer, config)
-        self.config = config
-        self.data_loader = data_loader
-        if len_epoch is None:
-            # epoch-based training
-            self.len_epoch = len(self.data_loader)
-        else:
-            # iteration-based training
-            self.data_loader = inf_loop(data_loader)
-            self.len_epoch = len_epoch
-        self.valid_data_loader = valid_data_loader
-        self.do_validation = self.valid_data_loader is not None
-        self.lr_scheduler = lr_scheduler
-        self.log_step = int(np.sqrt(data_loader.batch_size))
+	def __init__(self, model, loss, metrics, optimizer, resume, config,
+				 data_loader, valid_data_loader=None, lr_scheduler=None, train_logger=None):
+		super(Trainer, self).__init__(model, loss, metrics, optimizer, resume, config, train_logger)
+		self.config = config
+		self.data_loader = data_loader
+		self.valid_data_loader = valid_data_loader
+		self.do_validation = self.valid_data_loader is not None
+		self.lr_scheduler = lr_scheduler
+		self.max_iter = len(self.data_loader) * self.epochs
+		self.init_lr = optimizer.param_groups[0]['lr']
 
-        self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
-        self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
 
-    def _train_epoch(self, epoch):
-        """
-        Training logic for an epoch
+	def _eval_metrics(self, output, target):
+		acc_metrics = np.zeros(len(self.metrics))
+		for i, metric in enumerate(self.metrics):
+			acc_metrics[i] += metric(output, target)
+		return acc_metrics
 
-        :param epoch: Integer, current training epoch.
-        :return: A log that contains average loss and metric in this epoch.
-        """
-        self.model.train()
-        self.train_metrics.reset()
-        for batch_idx, (data, target) in enumerate(self.data_loader):
-            data, target = data.to(self.device), target.to(self.device)
 
-            self.optimizer.zero_grad()
-            output = self.model(data)
-            loss = self.criterion(output, target)
-            loss.backward()
-            self.optimizer.step()
+	def _train_epoch(self, epoch):
+		print("Train on epoch...")
+		self.model.train()
+		self.writer_train.set_step(epoch)
+	
+		# Perform training
+		total_loss = 0
+		total_metrics = np.zeros(len(self.metrics))
+		n_iter = len(self.data_loader)
+		for batch_idx, (data, target) in tqdm(enumerate(self.data_loader), total=n_iter):
+			curr_iter = batch_idx + (epoch-1)*n_iter
+			data, target = data.to(self.device), target.to(self.device)
+			self.optimizer.zero_grad()
+			output = self.model(data)
+			loss = self.loss(output, target)
+			loss.backward()
+			self.optimizer.step()
 
-            self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
-            self.train_metrics.update('loss', loss.item())
-            for met in self.metric_ftns:
-                self.train_metrics.update(met.__name__, met(output, target))
+			total_loss += loss.item()
+			total_metrics += self._eval_metrics(output, target)
 
-            if batch_idx % self.log_step == 0:
-                self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
-                    epoch,
-                    self._progress(batch_idx),
-                    loss.item()))
-                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
+			if (batch_idx==n_iter-2) and (self.verbosity>=2):
+				self.writer_train.add_image('train/input', make_grid(data[:,:3,:,:].cpu(), nrow=4, normalize=True))
+				self.writer_train.add_image('train/label', make_grid(target.unsqueeze(1).cpu(), nrow=4, normalize=True))
+				if type(output)==tuple or type(output)==list:
+					self.writer_train.add_image('train/output', make_grid(F.softmax(output[0], dim=1)[:,1:2,:,:].cpu(), nrow=4, normalize=True))
+				else:
+					# self.writer_train.add_image('train/output', make_grid(output.cpu(), nrow=4, normalize=True))
+					self.writer_train.add_image('train/output', make_grid(F.softmax(output, dim=1)[:,1:2,:,:].cpu(), nrow=4, normalize=True))
 
-            if batch_idx == self.len_epoch:
-                break
-        log = self.train_metrics.result()
+			poly_lr_scheduler(self.optimizer, self.init_lr, curr_iter, self.max_iter, power=0.9)
 
-        if self.do_validation:
-            val_log = self._valid_epoch(epoch)
-            log.update(**{'val_'+k : v for k, v in val_log.items()})
+		# Record log
+		total_loss /= len(self.data_loader)
+		total_metrics /= len(self.data_loader)
+		log = {
+			'train_loss': total_loss,
+			'train_metrics': total_metrics.tolist(),
+		}
 
-        if self.lr_scheduler is not None:
-            self.lr_scheduler.step()
-        return log
+		# Write training result to TensorboardX
+		self.writer_train.add_scalar('loss', total_loss)
+		for i, metric in enumerate(self.metrics):
+			self.writer_train.add_scalar('metrics/%s'%(metric.__name__), total_metrics[i])
 
-    def _valid_epoch(self, epoch):
-        """
-        Validate after training an epoch
+		if self.verbosity>=2:
+			for i in range(len(self.optimizer.param_groups)):
+				self.writer_train.add_scalar('lr/group%d'%(i), self.optimizer.param_groups[i]['lr'])
 
-        :param epoch: Integer, current training epoch.
-        :return: A log that contains information about validation
-        """
-        self.model.eval()
-        self.valid_metrics.reset()
-        with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-                data, target = data.to(self.device), target.to(self.device)
+		# Perform validating
+		if self.do_validation:
+			print("Validate on epoch...")
+			val_log = self._valid_epoch(epoch)
+			log = {**log, **val_log}
 
-                output = self.model(data)
-                loss = self.criterion(output, target)
+		# Learning rate scheduler
+		if self.lr_scheduler is not None:
+			self.lr_scheduler.step()
 
-                self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
-                self.valid_metrics.update('loss', loss.item())
-                for met in self.metric_ftns:
-                    self.valid_metrics.update(met.__name__, met(output, target))
-                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
+		return log
 
-        # add histogram of model parameters to the tensorboard
-        for name, p in self.model.named_parameters():
-            self.writer.add_histogram(name, p, bins='auto')
-        return self.valid_metrics.result()
 
-    def _progress(self, batch_idx):
-        base = '[{}/{} ({:.0f}%)]'
-        if hasattr(self.data_loader, 'n_samples'):
-            current = batch_idx * self.data_loader.batch_size
-            total = self.data_loader.n_samples
-        else:
-            current = batch_idx
-            total = self.len_epoch
-        return base.format(current, total, 100.0 * current / total)
+	def _valid_epoch(self, epoch):
+		self.model.eval()
+		total_val_loss = 0
+		total_val_metrics = np.zeros(len(self.metrics))
+		n_iter = len(self.valid_data_loader)
+		self.writer_valid.set_step(epoch)
+
+		with torch.no_grad():
+			# Validate
+			for batch_idx, (data, target) in tqdm(enumerate(self.valid_data_loader), total=n_iter):
+				data, target = data.to(self.device), target.to(self.device)
+				output = self.model(data)
+				loss = self.loss(output, target)
+
+				total_val_loss += loss.item()
+				total_val_metrics += self._eval_metrics(output, target)
+
+				if (batch_idx==n_iter-2) and(self.verbosity>=2):
+					self.writer_valid.add_image('valid/input', make_grid(data[:,:3,:,:].cpu(), nrow=4, normalize=True))
+					self.writer_valid.add_image('valid/label', make_grid(target.unsqueeze(1).cpu(), nrow=4, normalize=True))
+					if type(output)==tuple or type(output)==list:
+						self.writer_valid.add_image('valid/output', make_grid(F.softmax(output[0], dim=1)[:,1:2,:,:].cpu(), nrow=4, normalize=True))
+					else:
+						# self.writer_valid.add_image('valid/output', make_grid(output.cpu(), nrow=4, normalize=True))
+						self.writer_valid.add_image('valid/output', make_grid(F.softmax(output, dim=1)[:,1:2,:,:].cpu(), nrow=4, normalize=True))
+
+			# Record log
+			total_val_loss /= len(self.valid_data_loader)
+			total_val_metrics /= len(self.valid_data_loader)
+			val_log = {
+				'valid_loss': total_val_loss,
+				'valid_metrics': total_val_metrics.tolist(),
+			}
+
+			# Write validating result to TensorboardX
+			self.writer_valid.add_scalar('loss', total_val_loss)
+			for i, metric in enumerate(self.metrics):
+				self.writer_valid.add_scalar('metrics/%s'%(metric.__name__), total_val_metrics[i])
+
+		return val_log
