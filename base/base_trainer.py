@@ -1,18 +1,9 @@
-#------------------------------------------------------------------------------
-#   Libraries
-#------------------------------------------------------------------------------
 from time import time
 import os, math, json, logging, datetime, torch
 from utils.visualization import WriterTensorboardX
 
-
-#------------------------------------------------------------------------------
-#   Class of BaseTrainer
-#------------------------------------------------------------------------------
 class BaseTrainer:
-	"""
-	Base class for all trainers
-	"""
+
 	def __init__(self, model, loss, metrics, optimizer, resume, config, train_logger=None):
 		self.config = config
 
@@ -69,7 +60,6 @@ class BaseTrainer:
 		if resume:
 			self._resume_checkpoint(resume)
 	
-
 	def _prepare_device(self, n_gpu_use):
 		""" 
 		setup GPU device if available, move model into configured device
@@ -85,7 +75,6 @@ class BaseTrainer:
 		device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
 		list_ids = list(range(n_gpu_use))
 		return device, list_ids
-
 
 	def train(self):
 		for epoch in range(self.start_epoch, self.epochs + 1):
@@ -131,7 +120,6 @@ class BaseTrainer:
 			# Save checkpoint
 			self._save_checkpoint(epoch, save_best=best)
 
-
 	def _train_epoch(self, epoch):
 		"""
 		Training logic for an epoch
@@ -176,7 +164,6 @@ class BaseTrainer:
 		else:
 			self.logger.info("Monitor is not improved from %f" % (self.monitor_best))
 
-
 	def _resume_checkpoint(self, resume_path):
 		"""
 		Resume from saved checkpoints
@@ -200,6 +187,6 @@ class BaseTrainer:
 		# 						'Optimizer parameters not being resumed.')
 		# else:
 		# 	self.optimizer.load_state_dict(checkpoint['optimizer'])
-	
+		
 		self.train_logger = checkpoint['logger']
 		self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch-1))

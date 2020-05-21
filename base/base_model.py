@@ -1,6 +1,3 @@
-#------------------------------------------------------------------------------
-#   Libraries
-#------------------------------------------------------------------------------
 import torch
 import torch.nn as nn
 
@@ -8,10 +5,6 @@ import torchsummary
 import os, warnings, sys
 from utils import add_flops_counting_methods, flops_to_string
 
-
-#------------------------------------------------------------------------------
-#   BaseModel
-#------------------------------------------------------------------------------
 class BaseModel(nn.Module):
 	def __init__(self):
 		super(BaseModel, self).__init__()
@@ -64,10 +57,6 @@ class BaseModel(nn.Module):
 		state_dict.update(model_dict)
 		self.load_state_dict(state_dict)
 
-
-#------------------------------------------------------------------------------
-#   BaseBackbone
-#------------------------------------------------------------------------------
 class BaseBackbone(BaseModel):
 	def __init__(self):
 		super(BaseBackbone, self).__init__()
@@ -99,10 +88,6 @@ class BaseBackbone(BaseModel):
 		state_dict.update(model_dict)
 		self.load_state_dict(state_dict)
 
-
-#------------------------------------------------------------------------------
-#  BaseBackboneWrapper
-#------------------------------------------------------------------------------
 class BaseBackboneWrapper(BaseBackbone):
 	def __init__(self):
 		super(BaseBackboneWrapper, self).__init__()

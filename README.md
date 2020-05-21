@@ -396,4 +396,4 @@ Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before c
 This project is licensed under the MIT License. See  LICENSE for more details
 
 ## Acknowledgements
-This project is inspired by the project [Human-Segmentation-PyTorch](https://github.com/thuyngch/Human-Segmentation-PyTorch) and [pytorch_segmentation](https://github.com/yassouali/pytorch_segmentation)
+This project is inspired by the project [pytorch-template](https://github.com/victoresque/pytorch-template),[Human-Segmentation-PyTorch](https://github.com/thuyngch/Human-Segmentation-PyTorch) and [pytorch_segmentation](https://github.com/yassouali/pytorch_segmentation)

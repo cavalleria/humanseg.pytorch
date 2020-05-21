@@ -1,15 +1,8 @@
-#------------------------------------------------------------------------------
-#   Libraries
-#------------------------------------------------------------------------------
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
 from torch.utils.data.sampler import SubsetRandomSampler
 
-
-#------------------------------------------------------------------------------
-#   BaseDataLoader
-#------------------------------------------------------------------------------
 class BaseDataLoader(DataLoader):
     def __init__(self, dataset, batch_size, shuffle, validation_split, num_workers, collate_fn=default_collate):
         self.validation_split = validation_split
@@ -28,7 +21,6 @@ class BaseDataLoader(DataLoader):
             'num_workers': num_workers
             }
         super(BaseDataLoader, self).__init__(sampler=self.sampler, **self.init_kwargs)
-
 
     def _split_sampler(self, split):
         if split == 0.0:
@@ -52,7 +44,6 @@ class BaseDataLoader(DataLoader):
         self.n_samples = len(train_idx)
 
         return train_sampler, valid_sampler
-
 
     def split_validation(self):
         if self.valid_sampler is None:
