@@ -4,9 +4,8 @@ import torch.nn.functional as F
 from functools import reduce
 
 from base.base_model import BaseModel
-from nets.mobilenetv2 import MobileNetV2
-from nets.resnet import ResNet
-
+from nets import mobilenetv2
+from nets import resnet
 
 class DecoderBlock(nn.Module):
 	def __init__(self, in_channels, out_channels, block_unit):
@@ -26,23 +25,23 @@ class UNet(BaseModel):
 		if backbone=='mobilenetv2':
 			alpha = 1.0
 			expansion = 6
-			self.backbone = MobileNetV2.MobileNetV2(alpha=alpha, expansion=expansion, num_classes=None)
+			self.backbone = mobilenetv2.MobileNetV2(alpha=alpha, expansion=expansion, num_classes=None)
 			self._run_backbone = self._run_backbone_mobilenetv2
 			# Stage 1
-			channel1 = MobileNetV2._make_divisible(int(96*alpha), 8)
-			block_unit = MobileNetV2.InvertedResidual(2*channel1, channel1, 1, expansion)
+			channel1 = mobilenetv2._make_divisible(int(96*alpha), 8)
+			block_unit = mobilenetv2.InvertedResidual(2*channel1, channel1, 1, expansion)
 			self.decoder1 = DecoderBlock(self.backbone.last_channel, channel1, block_unit)
 			# Stage 2
-			channel2 = MobileNetV2._make_divisible(int(32*alpha), 8)
-			block_unit = MobileNetV2.InvertedResidual(2*channel2, channel2, 1, expansion)
+			channel2 = mobilenetv2._make_divisible(int(32*alpha), 8)
+			block_unit = mobilenetv2.InvertedResidual(2*channel2, channel2, 1, expansion)
 			self.decoder2 = DecoderBlock(channel1, channel2, block_unit)
 			# Stage 3
-			channel3 = MobileNetV2._make_divisible(int(24*alpha), 8)
-			block_unit = MobileNetV2.InvertedResidual(2*channel3, channel3, 1, expansion)
+			channel3 = mobilenetv2._make_divisible(int(24*alpha), 8)
+			block_unit = mobilenetv2.InvertedResidual(2*channel3, channel3, 1, expansion)
 			self.decoder3 = DecoderBlock(channel2, channel3, block_unit)
 			# Stage 4
-			channel4 = MobileNetV2._make_divisible(int(16*alpha), 8)
-			block_unit = MobileNetV2.InvertedResidual(2*channel4, channel4, 1, expansion)
+			channel4 = mobilenetv2._make_divisible(int(16*alpha), 8)
+			block_unit = mobilenetv2.InvertedResidual(2*channel4, channel4, 1, expansion)
 			self.decoder4 = DecoderBlock(channel3, channel4, block_unit)
 
 		elif 'resnet' in backbone:
@@ -57,28 +56,28 @@ class UNet(BaseModel):
 			else:
 				raise NotImplementedError
 			filters = 64
-			self.backbone = ResNet.get_resnet(n_layers, num_classes=None)
+			self.backbone = resnet.get_resnet(n_layers, num_classes=None)
 			self._run_backbone = self._run_backbone_resnet
-			block = ResNet.BasicBlock if (n_layers==18 or n_layers==34) else ResNet.Bottleneck
+			block = resnet.BasicBlock if (n_layers==18 or n_layers==34) else ResNet.Bottleneck
 			# Stage 1
 			last_channel = 8*filters if (n_layers==18 or n_layers==34) else 32*filters
 			channel1 = 4*filters if (n_layers==18 or n_layers==34) else 16*filters
-			downsample = nn.Sequential(ResNet.conv1x1(2*channel1, channel1), nn.BatchNorm2d(channel1))
+			downsample = nn.Sequential(resnet.conv1x1(2*channel1, channel1), nn.BatchNorm2d(channel1))
 			block_unit = block(2*channel1, int(channel1/block.expansion), 1, downsample)
 			self.decoder1 = DecoderBlock(last_channel, channel1, block_unit)
 			# Stage 2
 			channel2 = 2*filters if (n_layers==18 or n_layers==34) else 8*filters
-			downsample = nn.Sequential(ResNet.conv1x1(2*channel2, channel2), nn.BatchNorm2d(channel2))
+			downsample = nn.Sequential(resnet.conv1x1(2*channel2, channel2), nn.BatchNorm2d(channel2))
 			block_unit = block(2*channel2, int(channel2/block.expansion), 1, downsample)
 			self.decoder2 = DecoderBlock(channel1, channel2, block_unit)
 			# Stage 3
 			channel3 = filters if (n_layers==18 or n_layers==34) else 4*filters
-			downsample = nn.Sequential(ResNet.conv1x1(2*channel3, channel3), nn.BatchNorm2d(channel3))
+			downsample = nn.Sequential(resnet.conv1x1(2*channel3, channel3), nn.BatchNorm2d(channel3))
 			block_unit = block(2*channel3, int(channel3/block.expansion), 1, downsample)
 			self.decoder3 = DecoderBlock(channel2, channel3, block_unit)
 			# Stage 4
 			channel4 = filters
-			downsample = nn.Sequential(ResNet.conv1x1(2*channel4, channel4), nn.BatchNorm2d(channel4))
+			downsample = nn.Sequential(resnet.conv1x1(2*channel4, channel4), nn.BatchNorm2d(channel4))
 			block_unit = block(2*channel4, int(channel4/block.expansion), 1, downsample)
 			self.decoder4 = DecoderBlock(channel3, channel4, block_unit)
 

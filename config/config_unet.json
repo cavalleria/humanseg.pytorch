@@ -14,7 +14,8 @@
 	"train_loader": {
 		"type": "SegmentationDataLoader",
 		"args":{
-			"pairs_file": "dataset/train_mask.txt",
+			"prefix": "/workspace/data",
+			"pairs_file": "../data/train_mask.txt",
 			"color_channel": "RGB",
 			"resize": 320,
 			"padding_value": 0,
@@ -36,7 +37,8 @@
 	"valid_loader": {
 		"type": "SegmentationDataLoader",
 		"args":{
-			"pairs_file": "dataset/valid_mask.txt",
+			"prefix": "/workspace/data",
+			"pairs_file": "../data/valid_mask.txt",
 			"color_channel": "RGB",
 			"resize": 320,
 			"padding_value": 0,
@@ -74,7 +76,7 @@
 
 	"trainer": {
 		"epochs": 80,
-		"save_dir": "/workspace/checkpoints/",
+		"save_dir": "/workspace/models/",
 		"save_freq": null,
 		"verbosity": 2,
 		"monitor": "valid_loss",
@@ -83,6 +85,6 @@
 
 	"visualization":{
 		"tensorboardX": true,
-		"log_dir": "/workspace/checkpoints/"
+		"log_dir": "/workspace/models/"
 	}
 }

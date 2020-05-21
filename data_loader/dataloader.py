@@ -6,16 +6,17 @@ from random import shuffle
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from dataloaders import transforms
+from data_loader import transforms
 # import transforms
 class SegmentationDataLoader(object):
-	def __init__(self, pairs_file, color_channel="RGB", resize=224, padding_value=0,
+	def __init__(self, prefix, pairs_file, color_channel="RGB", resize=224, padding_value=0,
 				crop_range=[0.75, 1.0], flip_hor=0.5, rotate=0.3, angle=10, noise_std=5,
 				normalize=True, one_hot=False, is_training=True,
 				shuffle=True, batch_size=1, n_workers=1, pin_memory=True):
 
 		# Storage parameters
 		super(SegmentationDataLoader, self).__init__()
+		self.prefix = prefix
 		self.pairs_file = pairs_file
 		self.color_channel = color_channel
 		self.resize = resize
@@ -35,6 +36,7 @@ class SegmentationDataLoader(object):
 
 		# Dataset
 		self.dataset = SegmentationDataset(
+			prefix = self.prefix,
 			pairs_file=self.pairs_file,
 			color_channel=self.color_channel,
 			resize=self.resize,
@@ -64,7 +66,7 @@ class SegmentationDataset(Dataset):
 	The dataset requires label is a grayscale image with value {0,1,...,C-1},
 	where C is the number of classes.
 	"""
-	def __init__(self, pairs_file, color_channel="RGB", resize=512, padding_value=0,
+	def __init__(self, prefix, pairs_file, color_channel="RGB", resize=512, padding_value=0,
 		is_training=True, noise_std=5, crop_range=[0.75, 1.0], flip_hor=0.5, rotate=0.3, angle=10,
 		one_hot=False, normalize=True, mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225]):
 
@@ -79,6 +81,8 @@ class SegmentationDataset(Dataset):
 		error_flg = False
 		for line in lines:
 			image_file, label_file = line
+			image_file = os.path.join(prefix, image_file.strip())
+			label_file = os.path.join(prefix, label_file.strip())
 			if not os.path.exists(image_file):
 				print("%s does not exist!" % (image_file))
 				error_flg = True

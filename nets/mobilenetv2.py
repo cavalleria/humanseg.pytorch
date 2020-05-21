@@ -117,16 +117,12 @@ class MobileNetV2(nn.Module):
 	def forward(self, x, feature_names=None):
 		# Stage1
 		x = reduce(lambda x, n: self.features[n](x), list(range(0,2)), x)
-
 		# Stage2
 		x = reduce(lambda x, n: self.features[n](x), list(range(2,4)), x)
-
 		# Stage3
 		x = reduce(lambda x, n: self.features[n](x), list(range(4,7)), x)
-
 		# Stage4
 		x = reduce(lambda x, n: self.features[n](x), list(range(7,14)), x)
-
 		# Stage5
 		x = reduce(lambda x, n: self.features[n](x), list(range(14,19)), x)
 

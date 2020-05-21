@@ -19,7 +19,7 @@
 		* [Trainer](#trainer)
 		* [Model](#model)
 		* [Loss](#loss)
-		* [metrics](#metrics)
+		* [Metrics](#metrics)
 		* [Additional logging](#additional-logging)
 		* [Validation data](#validation-data)
 		* [Checkpoints](#checkpoints)

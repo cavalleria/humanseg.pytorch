@@ -1,0 +1,1 @@
+from nets.mobilenetv2 import MobileNetV2

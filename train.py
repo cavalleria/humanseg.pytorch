@@ -1,14 +1,15 @@
-import os, json, argparse, 
+import os, json, argparse
 import torch
 import models as module_arch
 import evaluation.losses as module_loss
 import evaluation.metrics as module_metric
-import dataloaders.dataloader as module_data
+import data_loader.dataloader as module_data
 
 from utils.logger import Logger
 from trainer.trainer import Trainer
 
 def get_instance(module, name, config, *args):
+	print(module, config[name]['type'])
 	return getattr(module, config[name]['type'])(*args, **config[name]['args'])
 
 def main(config, resume):
