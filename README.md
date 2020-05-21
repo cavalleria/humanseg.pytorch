@@ -396,4 +396,4 @@ Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before c
 This project is licensed under the MIT License. See  LICENSE for more details
 
 ## Acknowledgements
-This project is inspired by the project [Tensorflow-Project-Template](https://github.com/MrGemy95/Tensorflow-Project-Template) by [Mahmoud Gemy](https://github.com/MrGemy95)
+This project is inspired by the project [Human-Segmentation-PyTorch](https://github.com/thuyngch/Human-Segmentation-PyTorch) and [pytorch_segmentation](https://github.com/yassouali/pytorch_segmentation)
