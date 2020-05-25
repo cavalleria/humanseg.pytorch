@@ -4,8 +4,8 @@ import torch.nn.functional as F
 from functools import reduce
 
 from base.base_model import BaseModel
-from nets import mobilenetv2
-from nets import resnet
+from .backbones import mobilenetv2
+from .backbones import resnet
 
 class DecoderBlock(nn.Module):
 	def __init__(self, in_channels, out_channels, block_unit):
@@ -58,7 +58,7 @@ class UNet(BaseModel):
 			filters = 64
 			self.backbone = resnet.get_resnet(n_layers, num_classes=None)
 			self._run_backbone = self._run_backbone_resnet
-			block = resnet.BasicBlock if (n_layers==18 or n_layers==34) else ResNet.Bottleneck
+			block = resnet.BasicBlock if (n_layers==18 or n_layers==34) else resnet.Bottleneck
 			# Stage 1
 			last_channel = 8*filters if (n_layers==18 or n_layers==34) else 32*filters
 			channel1 = 4*filters if (n_layers==18 or n_layers==34) else 16*filters

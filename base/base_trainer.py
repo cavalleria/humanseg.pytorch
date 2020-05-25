@@ -1,5 +1,6 @@
 from time import time
-import os, math, json, logging, datetime, torch
+import os, math, json, logging, datetime
+import torch
 from utils.visualization import WriterTensorboardX
 
 class BaseTrainer:
@@ -13,15 +14,22 @@ class BaseTrainer:
 		os.makedirs(self.checkpoint_dir, exist_ok=True)
 
 		# Setup logger
+		'''
 		logging.basicConfig(
 			level=logging.INFO,
 			format="%(asctime)s %(message)s",
 			handlers=[
 				logging.FileHandler(os.path.join(self.checkpoint_dir, "train.log")),
-				logging.StreamHandler(),
+
 		])
 		self.logger = logging.getLogger(self.__class__.__name__)
-
+		'''
+		fh = logging.FileHandler(os.path.join(self.checkpoint_dir, "train.log"))
+		fh.setLevel(logging.INFO)		
+		self.logger = logging.getLogger(self.__class__.__name__)
+		self.logger.setLevel(logging.INFO)
+		self.logger.addHandler(fh)
+		
 		# Setup GPU device if available, move model into configured device
 		self.device, device_ids = self._prepare_device(config['n_gpu'])
 		self.model = model.to(self.device)
