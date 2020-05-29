@@ -1,11 +1,11 @@
 import os, cv2, torch
 import numpy as np
-from dataloaders import transforms
+from data_loader import transforms
 
 mean = np.array([0.485, 0.456, 0.406])[None,None,:]
 std = np.array([0.229, 0.224, 0.225])[None,None,:]
 
-def preprocessing(image, expected_size=224, pad_value=0):
+def preprocessing(image, expected_size=320, pad_value=0):
 	image, pad_up, pad_left, h_new, w_new = transforms.resize_image(image, expected_size, pad_value, ret_params=True)
 	image = image.astype(np.float32) / 255.0
 	image = (image - mean) / std

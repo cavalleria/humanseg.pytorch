@@ -112,3 +112,6 @@ datasets/
 __MACOSX/
 .history/
 pretrained/
+ckpts/
+*.mov
+*.avi
