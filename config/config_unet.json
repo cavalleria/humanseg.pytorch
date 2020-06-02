@@ -5,9 +5,9 @@
     "arch": {
         "type": "UNet",
         "args": {
-            "backbone": "resnet50",
+            "backbone": "mobilenetv2",
             "num_classes": 2,
-            "pretrained_backbone": null
+            "pretrained_backbone": "./pretrained/mobilenet_v2.pth"
         }
     },
 
@@ -29,7 +29,7 @@
 			"one_hot": false,
 			"shuffle": true,
 			"batch_size": 16,
-			"n_workers": 48,
+			"n_workers": 24,
 			"pin_memory": true
 		}
 	},
@@ -61,7 +61,7 @@
 		}
 	},
 
-	"loss": "bce_loss",
+	"loss": "lovasz_softmax",
 	"metrics": [
 		"miou"
 	],
@@ -77,7 +77,7 @@
 	"trainer": {
 		"epochs": 80,
 		"save_dir": "/workspace/models/",
-		"save_freq": null,
+		"save_freq": 1,
 		"verbosity": 2,
 		"monitor": "valid_loss",
 		"monitor_mode": "min"

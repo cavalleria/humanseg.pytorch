@@ -7,14 +7,15 @@
 		"args": {
 			"backbone": "resnet18",
 			"num_classes": 2,
-			"pretrained_backbone": "/root/pretrain/resnet18.pth"
+			"pretrained_backbone": "./pretrained/mobilenet_v2.pth"
 		}
 	},
 
 	"train_loader": {
 		"type": "SegmentationDataLoader",
 		"args":{
-			"pairs_file": "dataset/train_mask.txt",
+			"prefix": "/workspace/data",
+			"pairs_file": "../data/train_mask.txt",
 			"color_channel": "RGB",
 			"resize": 320,
 			"padding_value": 0,
@@ -36,7 +37,8 @@
 	"valid_loader": {
 		"type": "SegmentationDataLoader",
 		"args":{
-			"pairs_file": "dataset/valid_mask.txt",
+			"prefix": "/workspace/data",
+			"pairs_file": "../data/valid_mask.txt",
 			"color_channel": "RGB",
 			"resize": 320,
 			"padding_value": 0,
@@ -74,7 +76,7 @@
 
 	"trainer": {
 		"epochs": 80,
-		"save_dir": "/root/checkpoints/",
+		"save_dir": "/workspace/models/",
 		"save_freq": 1,
 		"verbosity": 2,
 		"monitor": "valid_loss",
@@ -83,6 +85,6 @@
 
 	"visualization":{
 		"tensorboardX": true,
-		"log_dir": "/root/checkpoints/"
+		"log_dir": "/workspace/models/"
 	}
 }

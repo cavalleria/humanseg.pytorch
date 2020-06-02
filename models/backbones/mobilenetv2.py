@@ -134,7 +134,7 @@ class MobileNetV2(nn.Module):
 		# Output
 		return x
 
-	def _load_pretrained_model(self, pretrained_file):
+	def load_pretrained_model(self, pretrained_file):
 		pretrain_dict = torch.load(pretrained_file, map_location='cpu')
 		model_dict = {}
 		state_dict = self.state_dict()

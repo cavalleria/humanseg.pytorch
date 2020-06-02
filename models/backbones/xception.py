@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from collections import OrderedDict
 
@@ -185,10 +186,35 @@ class Xception65(nn.Module):
         # Exit flow
         x = self.block20(c3)
         c4 = self.block21(x)
-
         return c1, c2, c3, c4
 
+    def load_pretrained_model(self, pretrained_file):
+        pretrain_dict = torch.load(pretrained_file, map_location='cpu')
+        model_dict = {}
+        state_dict = self.state_dict()
 
+        for k, v in pretrain_dict.items():
+            #print(k)
+            if k in state_dict:
+                if 'pointwise' in k:
+                    v = v.unsqueeze(-1).unsqueeze(-1)
+                if k.startswith('block12'):
+                    model_dict[k.replace('block12', 'block20')] = v
+                elif k.startswith('block11'):
+                    model_dict[k.replace('block11', 'block12')] = v
+                elif k.startswith('conv3'):
+                    model_dict[k] = v
+                elif k.startswith('bn3'):
+                    model_dict[k] = v
+                    model_dict[k.replace('bn3', 'bn4')] = v
+                elif k.startswith('conv4'):
+                    model_dict[k.replace('conv4', 'conv5')] = v
+                elif k.startswith('bn4'):
+                    model_dict[k.replace('bn4', 'bn5')] = v
+                else:
+                    model_dict[k] = v
+        state_dict.update(model_dict)
+        self.load_state_dict(state_dict)
 # -------------------------------------------------
 #                   For DFANet
 # -------------------------------------------------

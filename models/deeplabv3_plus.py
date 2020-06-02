@@ -1,13 +1,13 @@
-#------------------------------------------------------------------------------
-#  Libraries
-#------------------------------------------------------------------------------
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from functools import reduce
 
 from base.base_model import BaseModel
 from .backbones import resnet
 from .backbones import xception
+from .backbones import mobilenetv2
+
 
 class _ASPPModule(nn.Module):
 	def __init__(self, inplanes, planes, kernel_size, padding, dilation):
@@ -117,11 +117,19 @@ class DeepLabV3Plus(BaseModel):
 			self.aspp = ASPP(output_stride, inplanes=inplanes)
 			self.decoder = Decoder(num_classes, low_level_inplanes=low_level_inplanes)
 
+		elif backbone=='mobilenetv2':
+			alpha = 1.0
+			expansion = 6
+			self.backbone = mobilenetv2.MobileNetV2(alpha=alpha, expansion=expansion, num_classes=None)
+			self._run_backbone = self._run_backbone_mobilenetv2
+			self.aspp = ASPP(output_stride, inplanes=1280)
+			self.decoder = Decoder(num_classes, low_level_inplanes=24)
+		
 		elif backbone=='xception65':
 			self.backbone = xception.xception65()
-			self.aspp = ASPP(output_stride, inplanes=512)
+			self._run_backbone = self._run_backbone_xception65
+			self.aspp = ASPP(output_stride, inplanes=2048)
 			self.decoder = Decoder(num_classes, low_level_inplanes=256)
-
 		else:
 			raise NotImplementedError
 
@@ -156,7 +164,62 @@ class DeepLabV3Plus(BaseModel):
 		x5 = self.backbone.layer4(x4)
 		# Output
 		return x5, x2
+	
+	def _run_backbone_mobilenetv2(self, input):
+		x = input
+		# Stage1
+		x = reduce(lambda x, n: self.backbone.features[n](x), list(range(0,2)), x)
+		x1 = x
+		# Stage2
+		x = reduce(lambda x, n: self.backbone.features[n](x), list(range(2,4)), x)
+		x2 = x
+		# Stage3
+		x = reduce(lambda x, n: self.backbone.features[n](x), list(range(4,7)), x)
+		x3 = x
+		# Stage4
+		x = reduce(lambda x, n: self.backbone.features[n](x), list(range(7,14)), x)
+		x4 = x
+		# Stage5
+		x5 = reduce(lambda x, n: self.backbone.features[n](x), list(range(14,19)), x)
+		return x5, x2
 
+	def _run_backbone_xception65(self, input):
+		x = input
+		# Entry flow
+		x = self.backbone.conv1(x)
+		x = self.backbone.bn1(x)
+		x = self.backbone.relu(x)
+
+		x = self.backbone.conv2(x)
+		x = self.backbone.bn2(x)
+		x = self.backbone.relu(x)
+
+		x = self.backbone.block1(x)
+		x, c1 = self.backbone.block2(x)  # b, h//4, w//4, 256
+		x, c2 = self.backbone.block3(x)  # b, h//8, w//8, 728
+
+		# Middle flow
+		x = self.backbone.block4(x)
+		x = self.backbone.block5(x)
+		x = self.backbone.block6(x)
+		x = self.backbone.block7(x)
+		x = self.backbone.block8(x)
+		x = self.backbone.block9(x)
+		x = self.backbone.block10(x)
+		x = self.backbone.block11(x)
+		x = self.backbone.block12(x)
+		x = self.backbone.block13(x)
+		x = self.backbone.block14(x)
+		x = self.backbone.block15(x)
+		x = self.backbone.block16(x)
+		x = self.backbone.block17(x)
+		x = self.backbone.block18(x)
+		c3 = self.backbone.block19(x)
+
+		# Exit flow
+		x = self.backbone.block20(c3)
+		c4 = self.backbone.block21(x)
+		return c4,c1
 
 	def _freeze_bn(self):
 		for m in self.modules():
