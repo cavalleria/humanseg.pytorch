@@ -1,9 +1,9 @@
+#--bg ./tools/bg2.jpg \
+#--net xception65 \
 
-python tools/video_infer.py \
+CUDA_VISIBLE_DEVICES="3" python tools/video_infer.py \
     --use_cuda \
-    --bg ./tools/bg.jpeg \
-    --model deeplabv3_plus \
-    --net resnet50 \
-    --checkpoint ./ckpts/resnet50_bce_deeplab.pth \
-    --video ./seg_test2.mov \
-    --output ./zzz.avi
+    --model hrnet \
+    --checkpoint ./ckpts/hrnet_w18_small_v2.pth \
+    --video ./seg_test1.mov \
+    --output ./demob.avi

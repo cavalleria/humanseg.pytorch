@@ -5,6 +5,7 @@ from torch.nn import functional as F
 
 from models import UNet
 from models import DeepLabV3Plus
+from models import HighResolutionNet
 
 from utils import utils
 
@@ -15,7 +16,7 @@ def parse_args():
 	parser.add_argument('--bg', type=str, default=None, help='Path to the background image file')
 	parser.add_argument('--watch', action='store_true', default=False, help='Indicate show result live')
 	parser.add_argument('--input_sz', type=int, default=320, help='Input size')
-	parser.add_argument('--model', type=str, default='unet', help='model name')	
+	parser.add_argument('--model', type=str, default='unet', help='model name')
 	parser.add_argument('--net', type=str, default='resnet18', help='Path to the background image file')
 	parser.add_argument('--checkpoint', type=str, default="", help='Path to the trained model file')
 	parser.add_argument('--video', type=str, default="", help='Path to the input video')
@@ -40,12 +41,14 @@ def video_infer(args):
 		SIGMA = 0
 	# Alpha transperency
 	else:
-		COLOR1 = [255, 0, 0]
-		COLOR2 = [0, 0, 255]
+		COLOR1 = [90, 140, 154]
+		COLOR2 = [0, 0, 0]
 	if args.model=='unet':
 		model = UNet(backbone=args.net, num_classes=2, pretrained_backbone=None)
 	elif args.model=='deeplabv3_plus':
-		model = DeepLabV3Plus(backbone=args.net, num_classes=2,pretrained_backbone=None)
+		model = DeepLabV3Plus(backbone=args.net, num_classes=2, pretrained_backbone=None)
+	elif args.model=='hrnet':
+		model = HighResolutionNet(num_classes=2, pretrained_backbone=None)
 	if args.use_cuda:
 		model = model.cuda()
 	trained_dict = torch.load(args.checkpoint, map_location="cpu")['state_dict']
