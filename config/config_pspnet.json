@@ -7,7 +7,7 @@
 		"args": {
 			"backbone": "resnet18",
 			"num_classes": 2,
-			"pretrained_backbone": "./pretrained/mobilenet_v2.pth"
+			"pretrained_backbone": "./pretrained/resnet18.pth"
 		}
 	},
 
