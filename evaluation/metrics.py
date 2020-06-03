@@ -50,3 +50,19 @@ def custom_icnet_miou(logits, targets):
 		return miou(logits[0], targets)
 	else:
 		return miou(logits, targets)
+
+def custom_hrnet_miou(logits, targets, eps=1e-6):
+    
+	ph, pw = logits.size(2), logits.size(3)
+	h, w = targets.size(1), targets.size(2)
+	if ph != h or pw != w:
+		logits = F.upsample(input=logits, size=(h, w), mode='bilinear')
+	outputs = torch.argmax(logits, dim=1, keepdim=True).type(torch.int64)
+	targets = torch.unsqueeze(targets, dim=1).type(torch.int64)
+	outputs = torch.zeros_like(logits).scatter_(dim=1, index=outputs, src=torch.tensor(1.0)).type(torch.int8)
+	targets = torch.zeros_like(logits).scatter_(dim=1, index=targets, src=torch.tensor(1.0)).type(torch.int8)
+
+	inter = (outputs & targets).type(torch.float32).sum(dim=(2,3))
+	union = (outputs | targets).type(torch.float32).sum(dim=(2,3))
+	iou = inter / (union + eps)
+	return iou.mean()

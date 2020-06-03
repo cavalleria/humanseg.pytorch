@@ -3,11 +3,11 @@
     "n_gpu": 1,
     
     "arch": {
-        "type": "UNet",
+        "type": "HighResolutionNet",
         "args": {
-            "backbone": "mobilenetv2",
+            "backbone": null,
             "num_classes": 2,
-            "pretrained_backbone": "./pretrained/mobilenet_v2.pth"
+            "pretrained_backbone": "./pretrained/hrnet_w18_small_v2.pth"
         }
     },
 
@@ -61,9 +61,9 @@
 		}
 	},
 
-	"loss": "bce_loss",
+	"loss": "custom_hrnet_loss",
 	"metrics": [
-		"miou"
+		"custom_hrnet_miou"
 	],
 
 	"lr_scheduler": {

@@ -92,7 +92,7 @@ class UNet(BaseModel):
 		# Initialize
 		self._init_weights()
 		if pretrained_backbone is not None:
-			self.backbone._load_pretrained_model(pretrained_backbone)
+			self.backbone.load_pretrained_model(pretrained_backbone)
 
 
 	def forward(self, input):

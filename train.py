@@ -7,6 +7,7 @@ import data_loader.dataloader as module_data
 
 from utils.logger import Logger
 from trainer.trainer import Trainer
+from utils.flops_counter import get_model_summary
 
 def get_instance(module, name, config, *args):
 	return getattr(module, config[name]['type'])(*args, **config[name]['args'])
@@ -16,7 +17,12 @@ def main(config, resume):
 
 	model = get_instance(module_arch, 'arch', config)
 	img_sz = config["train_loader"]["args"]["resize"]
-	model.summary(input_shape=(3, img_sz, img_sz))
+	if config["arch"]["type"] != "HighResolutionNet":
+		model.summary(input_shape=(3, img_sz, img_sz))
+	else:
+		dump_input = torch.rand((1, 3, img_sz, img_sz))
+		print(get_model_summary(model, dump_input, verbose=True))
+
 
 	train_loader = get_instance(module_data, 'train_loader', config).loader
 	valid_loader = get_instance(module_data, 'valid_loader', config).loader

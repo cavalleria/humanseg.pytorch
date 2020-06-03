@@ -8,6 +8,7 @@
 	* [Requirements](#requirements)
 	* [Features](#features)
 	* [Folder Structure](#folder-structure)
+  * [Benchmark](#benchmark)
 	* [Usage](#usage)
 		* [Config file format](#config-file-format)
 		* [Using config files](#using-config-files)
@@ -80,6 +81,30 @@
       ├── metric.py
       └── util.py
   ```
+## Benchmark
+| Methon | Backbone | Loss | Pretrain | Train Loss | Train miou | Valid Loss | Valid miou |
+| :----: | :----: | :----: | :----: | :----: | :----: | :----: | :----: | 
+| UNet | Mobilenetv2 | Dice Loss | no | 0.0231 | 0.9534 | 0.0242 | 0.9512 |
+| UNet | ResNet-18 | Dice Loss | no | 0.0220 | 0.9600 | 0.0239 | 0.9582 |
+| UNet | ResNet-18 | BCE Loss | no | 0.0334 | 0.9656 | 0.0365 | 0.9594 |
+| UNet | ResNet-18 | Lovasz Loss | no | 0.0368 | 0.9593 | 0.0452 | 0.9550 |
+| UNet | ResNet-50 | BCE Loss | no | 0.0340 | 0.9651 | 0.0368 | 0.9585 |
+| Deeplabv3+ | ResNet-18 | CE | yes | 0.0279 | 0.9707 | 0.0303 | 0.9667 |
+| Deeplabv3+ | ResNet-50 | BCE Loss | yes | 0.0241 | 0.9744 | 0.0290 | 0.9696 |
+| UNet | Mobilenetv2 | BCE Loss | no | 0.0392 | 0.9604 | 0.0383 | 0.9576 |
+| UNet | Mobilenetv2 | BCE Loss | yes | 0.0278 | 0.9712 | 0.0324 | 0.9662 |
+| UNet | Mobilenetv2 | Lovasz Loss | yes | 0.0357 | 0.9674 | 0.0426 | 0.9656 |
+| Deeplabv3+ | Mobilenetv2 | BCE Loss | yes | 0.0311 | 0.9677 | 0.0313 | 0.9659 |
+| Deeplabv3+ | Xception65 | BCE Loss | yes | 0.0359 | 0.9626 | 0.0424 | 0.9543 |s
+
+
+
+
+
+
+
+
+
 
 ## Usage
 The code in this repo is an MNIST example of the template.

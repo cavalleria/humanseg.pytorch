@@ -63,7 +63,7 @@
 		}
 	},
 
-	"loss": "bce_loss",
+	"loss": "ce_loss",
 	"metrics": [
 		"miou"
 	],

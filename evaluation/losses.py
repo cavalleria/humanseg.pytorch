@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 try:
@@ -40,14 +41,14 @@ def dice_loss_with_sigmoid(sigmoid, targets, smooth=1.0):
 	return dice
 
 def bce_loss(logits, targets):
-	"""
-	logits: (torch.float32)  shape (N, C, H, W)  (16, 2, 160, 160)
-	targets: (torch.float32) shape (N, H, W), value {0,1,...,C-1}  (16, 160, 160)
-	"""
-	targets = torch.unsqueeze(targets, dim=1)
-	targets = torch.zeros_like(logits).scatter_(dim=1, index=targets.type(torch.int64), src=torch.tensor(1.0))
-	loss = F.binary_cross_entropy_with_logits(logits, targets)
-	return loss
+    """
+    logits: (torch.float32)  shape (N, C, H, W)  (16, 2, 160, 160)
+    targets: (torch.float32) shape (N, H, W), value {0,1,...,C-1}  (16, 160, 160)
+    """
+    targets = torch.unsqueeze(targets, dim=1)
+    targets = torch.zeros_like(logits).scatter_(dim=1, index=targets.type(torch.int64), src=torch.tensor(1.0))
+    loss = F.binary_cross_entropy_with_logits(logits, targets)
+    return loss
 
 #==============================lovasz loss==================================
 # adapted from https://github.com/bermanmaxim/LovaszSoftmax/blob/master/pytorch/lovasz_losses.py
@@ -206,3 +207,35 @@ def custom_icnet_loss(logits, targets, alpha=[0.4, 0.16]):
 
 	else:
 		return ce_loss(logits, targets)
+
+
+def custom_hrnet_loss(logits, targets):
+    
+    ph, pw = logits.size(2), logits.size(3)
+    h, w = targets.size(1), targets.size(2)
+    if ph != h or pw != w:
+        logits = F.upsample(input=logits, size=(h, w), mode='bilinear')
+
+    loss = ce_loss(logits, targets)
+    return loss
+
+# For HRNet
+def custom_hrnet_loss_ohem(score, target, ignore_label=-1, thresh=0.7, min_kept=100000):
+    ph, pw = score.size(2), score.size(3)
+    h, w = target.size(1), target.size(2)
+    if ph != h or pw != w:
+        score = F.upsample(input=score, size=(h, w), mode='bilinear')
+    pred = F.softmax(score, dim=1)
+    pixel_losses = ce_loss(score, target).contiguous().view(-1)
+    mask = target.contiguous().view(-1) != ignore_label         
+    
+    tmp_target = target.clone() 
+    tmp_target[tmp_target == ignore_label] = 0 
+    pred = pred.gather(1, tmp_target.unsqueeze(1)) 
+    pred, ind = pred.contiguous().view(-1,)[mask].contiguous().sort()
+    min_value = pred[min(min_kept, pred.numel() - 1)] 
+    threshold = max(min_value, thresh) 
+    
+    pixel_losses = pixel_losses[mask][ind]
+    pixel_losses = pixel_losses[pred < threshold] 
+    return pixel_losses.mean()
