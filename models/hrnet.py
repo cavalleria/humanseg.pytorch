@@ -25,7 +25,6 @@ BatchNorm2d = nn.BatchNorm2d
 BN_MOMENTUM = 0.01
 
 cfg = {
-    'PRETRAINED': 'pretrained_models/hrnet_w18_small_model_v2.pth',
     'FINAL_CONV_KERNEL': 1, 
     'STAGE1': {'NUM_MODULES': 1, 'NUM_BRANCHES': 1, 'BLOCK': 'BOTTLENECK', 'NUM_BLOCKS': [2],          'NUM_CHANNELS': [64],              'FUSE_METHOD': 'SUM'}, 
     'STAGE2': {'NUM_MODULES': 1, 'NUM_BRANCHES': 2, 'BLOCK': 'BASIC',      'NUM_BLOCKS': [2, 2],       'NUM_CHANNELS': [18, 36],          'FUSE_METHOD': 'SUM'}, 
@@ -443,14 +442,14 @@ class HighResolutionNet(BaseModel):
 
         return x
 
-    def init_weights(self, pretrained='',):
+    def init_weights(self, pretrained=None):
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.normal_(m.weight, std=0.001)
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
-        if os.path.isfile(pretrained):
+        if pretrained is not None:
             pretrained_dict = torch.load(pretrained)
             model_dict = self.state_dict()
             pretrained_dict = {k: v for k, v in pretrained_dict.items()
