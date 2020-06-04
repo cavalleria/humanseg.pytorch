@@ -69,6 +69,8 @@ def video_infer(args):
 			with torch.no_grad():
 				if args.use_cuda:
 					mask = model(X.cuda())
+					if mask.shape[1] != h_new:
+						mask = F.interpolate(mask, size=(args.input_sz, args.input_sz), mode='bilinear', align_corners=True)
 					mask = mask[..., pad_up: pad_up+h_new, pad_left: pad_left+w_new]
 					mask = F.interpolate(mask, size=(h,w), mode='bilinear', align_corners=True)
 					mask = F.softmax(mask, dim=1)
