@@ -64,24 +64,25 @@ def video_infer(args):
             h, w = image.shape[:2]
             read_cam_time = time()
 
-            # Predict mask
-            X, pad_up, pad_left, h_new, w_new = utils.preprocessing(image, expected_size=args.input_sz, pad_value=0)
-            preproc_time = time()
-            with torch.no_grad():
-                if args.use_cuda:
-                    mask = model(X.cuda())
-                    if mask.shape[1] != h_new:
-                    mask = mask[..., pad_up: pad_up+h_new, pad_left: pad_left+w_new]
-                    mask = F.interpolate(mask, size=(h,w), mode='bilinear', align_corners=True)
-                    mask = F.softmax(mask, dim=1)
-                    mask = mask[0,1,...].cpu().numpy()
-                else:
-                    mask = model(X)
-                    mask = mask[..., pad_up: pad_up+h_new, pad_left: pad_left+w_new]
-                    mask = F.interpolate(mask, size=(h,w), mode='bilinear', align_corners=True)
-                    mask = F.softmax(mask, dim=1)
-                    mask = mask[0,1,...].numpy()
-            predict_time = time()
+			# Predict mask
+			X, pad_up, pad_left, h_new, w_new = utils.preprocessing(image, expected_size=args.input_sz, pad_value=0)
+			preproc_time = time()
+			with torch.no_grad():
+				if args.use_cuda:
+					mask = model(X.cuda())
+					if mask.shape[1] != h_new:
+						mask = F.interpolate(mask, size=(args.input_sz, args.input_sz), mode='bilinear', align_corners=True)
+					mask = mask[..., pad_up: pad_up+h_new, pad_left: pad_left+w_new]
+					mask = F.interpolate(mask, size=(h,w), mode='bilinear', align_corners=True)
+					mask = F.softmax(mask, dim=1)
+					mask = mask[0,1,...].cpu().numpy()
+				else:
+					mask = model(X)
+					mask = mask[..., pad_up: pad_up+h_new, pad_left: pad_left+w_new]
+					mask = F.interpolate(mask, size=(h,w), mode='bilinear', align_corners=True)
+					mask = F.softmax(mask, dim=1)
+					mask = mask[0,1,...].numpy()
+			predict_time = time()
 
             # Draw result
             if args.bg is None:
