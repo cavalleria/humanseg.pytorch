@@ -4,6 +4,6 @@
 CUDA_VISIBLE_DEVICES="3" python tools/videoinfer.py \
     --use_cuda \
     --model hrnet \
-    --checkpoint ./ckpts/hrnet_w18_small_v2.pth \
-    --video ./seg_test2.mov \
-    --output ./demob.avi
+    --checkpoint ../models/HumanSeg/0603_072642/epoch78.pth \
+    --video ./tools/seg_test.mov \
+    --output ./demo.avi
