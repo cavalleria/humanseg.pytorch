@@ -66,3 +66,9 @@ def custom_hrnet_miou(logits, targets, eps=1e-6):
 	union = (outputs | targets).type(torch.float32).sum(dim=(2,3))
 	iou = inter / (union + eps)
 	return iou.mean()
+
+def custom_fastscnn_miou(logits, targets):
+	if type(logits)==tuple:
+		return miou(logits[0], targets)
+	else:
+		return miou(logits, targets)

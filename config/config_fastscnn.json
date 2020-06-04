@@ -3,11 +3,12 @@
     "n_gpu": 1,
     
     "arch": {
-        "type": "HighResolutionNet",
+        "type": "FastSCNN",
         "args": {
             "backbone": null,
-            "num_classes": 2,
-            "pretrained_backbone": "./pretrained/hrnet_w18_small_model_v1.pth"
+			"num_classes": 2,
+			"aux": true, 
+            "pretrained_backbone": "./pretrained/fast_scnn_citys.pth"
         }
     },
 
@@ -29,7 +30,7 @@
 			"one_hot": false,
 			"shuffle": true,
 			"batch_size": 16,
-			"n_workers": 24,
+			"n_workers": 48,
 			"pin_memory": true
 		}
 	},
@@ -61,9 +62,9 @@
 		}
 	},
 
-	"loss": "custom_hrnet_loss",
+	"loss": "custom_fastscnn_loss",
 	"metrics": [
-		"custom_hrnet_miou"
+		"custom_fastscnn_miou"
 	],
 
 	"lr_scheduler": {

@@ -8,13 +8,13 @@ except ImportError: # py3k
     from itertools import  filterfalse as ifilterfalse
 
 def ce_loss(logits, targets):
-	"""
-	logits: (torch.float32)  shape (N, C, H, W)
-	targets: (torch.float32) shape (N, H, W), value {0,1,...,C-1}
-	"""
-	targets = targets.type(torch.int64)
-	ce_loss = F.cross_entropy(logits, targets)
-	return ce_loss
+    """
+    logits: (torch.float32)  shape (N, C, H, W)
+    targets: (torch.float32) shape (N, H, W), value {0,1,...,C-1}
+    """
+    targets = targets.type(torch.int64)
+    ce_loss = F.cross_entropy(logits, targets)
+    return ce_loss
 
 def dice_loss(logits, targets, smooth=1.0):
 	"""
@@ -239,3 +239,11 @@ def custom_hrnet_loss_ohem(score, target, ignore_label=-1, thresh=0.7, min_kept=
     pixel_losses = pixel_losses[mask][ind]
     pixel_losses = pixel_losses[pred < threshold] 
     return pixel_losses.mean()
+
+
+def custom_fastscnn_loss(logits, targets, aux=True, aux_weight=0.2):
+    loss = ce_loss(logits[0], targets)
+    for i in range(1, len(logits)):
+        aux_loss = ce_loss(logits[i], targets)
+        loss += aux_weight * aux_loss
+    return loss
