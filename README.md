@@ -95,7 +95,9 @@
 | UNet | Mobilenetv2 | BCE Loss | yes | 0.0278 | 0.9712 | 0.0324 | 0.9662 |
 | UNet | Mobilenetv2 | Lovasz Loss | yes | 0.0357 | 0.9674 | 0.0426 | 0.9656 |
 | Deeplabv3+ | Mobilenetv2 | BCE Loss | yes | 0.0311 | 0.9677 | 0.0313 | 0.9659 |
-| Deeplabv3+ | Xception65 | BCE Loss | yes | 0.0359 | 0.9626 | 0.0424 | 0.9543 |s
+| Deeplabv3+ | Xception65 | BCE Loss | yes | 0.0359 | 0.9626 | 0.0424 | 0.9543 |
+| HRNet | W18_small_v2 | CE | yes | 0.0280 | 0.9703 | 0.0360 | 0.9610 |
+
 
 
 
