@@ -89,15 +89,17 @@
 | UNet | ResNet-18 | BCE Loss | no | 0.0334 | 0.9656 | 0.0365 | 0.9594 |
 | UNet | ResNet-18 | Lovasz Loss | no | 0.0368 | 0.9593 | 0.0452 | 0.9550 |
 | UNet | ResNet-50 | BCE Loss | no | 0.0340 | 0.9651 | 0.0368 | 0.9585 |
-| Deeplabv3+ | ResNet-18 | CE | yes | 0.0279 | 0.9707 | 0.0303 | 0.9667 |
+| Deeplabv3+ | ResNet-18 | CE Loss | yes | 0.0279 | 0.9707 | 0.0303 | 0.9667 |
 | Deeplabv3+ | ResNet-50 | BCE Loss | yes | 0.0241 | 0.9744 | 0.0290 | 0.9696 |
 | UNet | Mobilenetv2 | BCE Loss | no | 0.0392 | 0.9604 | 0.0383 | 0.9576 |
 | UNet | Mobilenetv2 | BCE Loss | yes | 0.0278 | 0.9712 | 0.0324 | 0.9662 |
 | UNet | Mobilenetv2 | Lovasz Loss | yes | 0.0357 | 0.9674 | 0.0426 | 0.9656 |
 | Deeplabv3+ | Mobilenetv2 | BCE Loss | yes | 0.0311 | 0.9677 | 0.0313 | 0.9659 |
 | Deeplabv3+ | Xception65 | BCE Loss | yes | 0.0359 | 0.9626 | 0.0424 | 0.9543 |
-| HRNet | W18_small_v2 | CE | yes | 0.0246 | 0.9749 | 0.0273 | 0.9700 |
-| PSPNet | ResNet-18 | CE | yes | 0.0451 | 0.9686 | 0.0312 | 0.9644 |
+| HRNet | W18_small_v1 | CE Loss | yes | 0.0285 | 0.9710 | 0.0299 | 0.9667 |
+| HRNet | W18_small_v2 | CE Loss | yes | 0.0246 | 0.9749 | 0.0273 | 0.9700 |
+| HRNet | W18_small_v2 | BCE Loss | yes | 0.0246 | 0.9753 | 0.0284 | 0.9693 |
+| PSPNet | ResNet-18 | CE Loss| yes | 0.0451 | 0.9686 | 0.0312 | 0.9644 |
 
 
 ## Usage
