@@ -100,6 +100,8 @@
 | HRNet | W18_small_v2 | CE Loss | yes | 0.0246 | 0.9749 | 0.0273 | 0.9700 |
 | HRNet | W18_small_v2 | BCE Loss | yes | 0.0246 | 0.9753 | 0.0284 | 0.9693 |
 | PSPNet | ResNet-18 | CE Loss| yes | 0.0451 | 0.9686 | 0.0312 | 0.9644 |
+| FastSCNN | Custom | CE Loss| yes | 0.0957 | 0.9616 | 0.0820 | 0.9584 |
+
 
 
 ## Usage
